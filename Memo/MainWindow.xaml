@@ -31,7 +31,7 @@
     </Window.Resources>
     
     <DockPanel>
-        <Border DockPanel.Dock="Top">
+        <Border DockPanel.Dock="Top"> 
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                 <TextBlock>Dificultad:</TextBlock>
                 <RadioButton>Facil</RadioButton>
