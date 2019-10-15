@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Memo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Background="Chocolate"
+        Title="MainWindow" Height="450" Width="800" Background="GreenYellow"
         >
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}">
