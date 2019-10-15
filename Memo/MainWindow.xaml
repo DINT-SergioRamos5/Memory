@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Memo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Background="Honeydew">
+        Title="MainWindow" Height="450" Width="800" Background="Chocolate"
+        >
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}">
             <Setter Property="FontWeight" Value="Bold"/>
@@ -34,10 +35,10 @@
         <Border DockPanel.Dock="Top"> 
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                 <TextBlock>Dificultad:</TextBlock>
-                <RadioButton>Facil</RadioButton>
-                <RadioButton>Media</RadioButton>
-                <RadioButton>Alta</RadioButton>                
-                <Button>Iniciar</Button>
+                <RadioButton x:Name="Facil">Facil</RadioButton>
+                <RadioButton x:Name="Media">Media</RadioButton>
+                <RadioButton x:Name="Alta">Alta</RadioButton>                
+                <Button Click="Button_Click">Iniciar</Button>
             </StackPanel>
         </Border>
         <Border DockPanel.Dock="Bottom">    
@@ -46,7 +47,7 @@
                 <ProgressBar Minimum="0" Maximum="100"  Name="pbStatus" Padding="10" Value="50"/>
             </DockPanel>            
         </Border>
-        <Grid>
+        <Grid x:Name="GridCartas">
            
         </Grid>
         
