@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.Threading;
 
 namespace Memo
 {
@@ -26,11 +28,13 @@ namespace Memo
         private TextBlock comparacion1;
         private TextBlock comparacion2;
         private Border borderComparacion1;
+        private DispatcherTimer timer;
+        private double progresoBarra;
 
         public MainWindow()
         {
             InitializeComponent();
-            
+            timer = new DispatcherTimer();
         }
 
         //Evento para cuando hacemos Click en el boton iniciar.
@@ -40,25 +44,35 @@ namespace Memo
             GridCartas.RowDefinitions.Clear();
             GridCartas.ColumnDefinitions.Clear();
 
+            //Siempre que iniciemos un nivel pondremos la barra a 0.
+            barraProgreso.Value = 0;
+
             //Inicializo el array aqui para que si cambio de nivel se vuelva a crear y no esten eliminados los caracteres.
             lista = new List<char>() { 'N', 'N', '&', '&', 'v', 'v', 'Y', 'Y', 'b', 'b', '~', '~', '!', '!', 'O', 'O', 'P', 'P', 'w', 'w' };
 
             //Vemos que RadioButton esta Cheked y añadimos el numero de filas que tiene que tener.
             //RemoveRange para borrar los valores de la lista que no necesito.
+            //Calculamos viendo las parejas que hay en cada nivel el progreso que tendra la barra.
             if(Facil.IsChecked == true)
             {
                 lista.RemoveRange(12, 8);
                 CrearFilasYColumnas(FILAS_BAJO);
+                progresoBarra = (double)100/((FILAS_BAJO * COLUMNAS) / 2);
             }               
             if (Media.IsChecked == true)
             {
                 lista.RemoveRange(16, 4);
                 CrearFilasYColumnas(FILAS_MEDIO);
+                progresoBarra = (double)100 / ((FILAS_MEDIO * COLUMNAS) / 2);
             }
                 
             if (Alta.IsChecked == true)
+            {
                 CrearFilasYColumnas(FILAS_ALTO);
-            
+                progresoBarra = (double)100 / ((FILAS_ALTO * COLUMNAS) / 2);
+            }
+                
+
         }
 
         private void CrearFilasYColumnas(int numeroFilas)
@@ -127,28 +141,42 @@ namespace Memo
             //Cambiamos el Text que es la ? por el TAG donde tenemos guardados los simbolos.
             tB.Text = tB.Tag.ToString();
 
-            if (comparacion1 == null)
-            {
-                comparacion1 = tB;
-                borderComparacion1 = ((Border)sender);
-            }                
-            else
-            {
-                comparacion2 = tB ;
-
-                if (comparacion1.Tag.ToString() != comparacion2.Tag.ToString())
-                {
-                    ((Border)sender).Background = Brushes.Yellow;
-                    borderComparacion1.Background = Brushes.Yellow;
-                    comparacion1.Text = "s";
-                    comparacion2.Text = "s";
-                }                     
-                comparacion1 = null;
-                comparacion2 = null;                
-            }
+            CompararCartas(tB, ((Border)sender));                        
 
         }
 
+        private void CompararCartas(TextBlock tB, Border b)
+        {
+            if (comparacion1 == null)
+            {
+                comparacion1 = tB;
+                borderComparacion1 = b;
+                borderComparacion1.MouseLeftButtonDown -= B_MouseLeftButtonDown;
+            }
+            else
+            {
+                comparacion2 = tB;
+
+                if (comparacion1.Tag.ToString() != comparacion2.Tag.ToString())
+                {
+
+                    b.Background = Brushes.Yellow;
+                    borderComparacion1.Background = Brushes.Yellow;
+                    comparacion1.Text = "s";
+                    comparacion2.Text = "s";
+                    borderComparacion1.MouseLeftButtonDown += B_MouseLeftButtonDown;
+                }
+                else
+                {
+                    borderComparacion1.MouseLeftButtonDown -= B_MouseLeftButtonDown;
+                    b.MouseLeftButtonDown -= B_MouseLeftButtonDown;
+                    barraProgreso.Value += progresoBarra;
+                    LanzarMensaje();
+                }
+                comparacion1 = null;
+                comparacion2 = null;
+            }
+        }
         /*Añadimos aleatoriamente los iconos de la lista en el texto del TextBlock y 
         una vez añadido, lo eliminamos con el RemoveAT para que no se pueda usar*/
         private void CrearCartasAleatorias(TextBlock tB)
@@ -159,10 +187,13 @@ namespace Memo
 
             tB.Tag = lista[numero].ToString();
 
-            lista.RemoveAt(numero);
-                       
+            lista.RemoveAt(numero);                       
         }
 
-        
+        private void LanzarMensaje()
+        {
+            if(barraProgreso.Value >= 100)
+                MessageBox.Show("Partida finalizada.", "Memory", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 }
