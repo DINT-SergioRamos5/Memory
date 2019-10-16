@@ -43,7 +43,7 @@
         </Border>
         <Border DockPanel.Dock="Bottom">    
             <DockPanel>               
-                <Button DockPanel.Dock="Right">Mostrar</Button>
+                <Button DockPanel.Dock="Right" >Mostrar</Button>
                 <ProgressBar Minimum="0" Maximum="100"  Name="pbStatus" Padding="10" Value="50"/>
             </DockPanel>            
         </Border>

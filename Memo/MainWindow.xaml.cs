@@ -20,33 +20,44 @@ namespace Memo
         
         private const int COLUMNAS = 4;
         private List<char> lista;
+        private const int FILAS_BAJO = 3;
+        private const int FILAS_MEDIO = 4;
+        private const int FILAS_ALTO = 5;
+        private TextBlock comparacion1;
+        private TextBlock comparacion2;
+        private Border borderComparacion1;
+
         public MainWindow()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            
         }
 
         //Evento para cuando hacemos Click en el boton iniciar.
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //Limpiamos las filas y columnas, para que no se añadan nuevas dentro de las otras
+            //Limpiamos las filas y columnas, para que no se añadan nuevas dentro de las otras.
             GridCartas.RowDefinitions.Clear();
             GridCartas.ColumnDefinitions.Clear();
+
+            //Inicializo el array aqui para que si cambio de nivel se vuelva a crear y no esten eliminados los caracteres.
             lista = new List<char>() { 'N', 'N', '&', '&', 'v', 'v', 'Y', 'Y', 'b', 'b', '~', '~', '!', '!', 'O', 'O', 'P', 'P', 'w', 'w' };
-            //Vemos que boton esta Cheked y añadimos el numero de filas que tiene que tener.
+
+            //Vemos que RadioButton esta Cheked y añadimos el numero de filas que tiene que tener.
             //RemoveRange para borrar los valores de la lista que no necesito.
             if(Facil.IsChecked == true)
             {
                 lista.RemoveRange(12, 8);
-                CrearFilasYColumnas(3);
+                CrearFilasYColumnas(FILAS_BAJO);
             }               
             if (Media.IsChecked == true)
             {
                 lista.RemoveRange(16, 4);
-                CrearFilasYColumnas(4);
+                CrearFilasYColumnas(FILAS_MEDIO);
             }
                 
             if (Alta.IsChecked == true)
-                CrearFilasYColumnas(5);
+                CrearFilasYColumnas(FILAS_ALTO);
             
         }
 
@@ -77,52 +88,81 @@ namespace Memo
         //Definimos el aspecto de las cartas que se introduciran en cada celda.
         private void CrearCartas(int filas, int columnas)
         {
-                Border b = new Border();
-                Viewbox vB = new Viewbox();
-                TextBlock tB = new TextBlock();
-                tB.Text = "?";
-                vB.Child = tB;
-                b.Child = vB;
-                b.Background = Brushes.Yellow;
+            Border b = new Border();
+            Viewbox vB = new Viewbox();
+            TextBlock tB = new TextBlock();
+            tB.FontFamily = new FontFamily("Webdings");
+            tB.Text = "s";
+            vB.Child = tB;
+            b.Child = vB;
+            b.Background = Brushes.Yellow;
+            
 
             //Introducimos en cada borde el evento para cuando hacemos click con el boton izq del raton encima de él.
-                b.MouseLeftButtonDown += B_MouseLeftButtonDown;
+            b.MouseLeftButtonDown += B_MouseLeftButtonDown;
+            CrearCartasAleatorias(tB);
             //Introducimos las cartas al grid, utilizamos el border ya que es el que contiene todo.
-                GridCartas.Children.Add(b);
+            GridCartas.Children.Add(b);
+
             //Añadimos el borde a cada fila y columna.
-                Grid.SetRow(b, filas);
-                Grid.SetColumn(b, columnas);           
+            Grid.SetRow(b, filas);
+            Grid.SetColumn(b, columnas);           
         }
 
         //Cuando hacemos click en la carta, aparece otro Border diferente con el Icono
         private void B_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {            
-            Viewbox vB = new Viewbox();
-            TextBlock tB = new TextBlock();
+            /*Todo esta creado en el meteodo CrearCartas()*/
+
+            // Cogemos el border anteriormente creado y le cambiamos el color.
             ((Border)sender).Background = Brushes.White;
-            ((Border)sender).Child = vB;
-            vB.Child = tB;
-            
-            //Para cambiar el texto del icono
-            CrearCartasAleatorias(tB);
-            
-            tB.FontFamily = new FontFamily("Webdings");
-            
+
+            // Creamos una variable ViewBox con la que cogemos el ViewBox creado anteriormente que es el hijo del border.
+            Viewbox vB = (Viewbox)((Border)sender).Child;
+
+            //Creamos una variable TextBlock y cogemos el hijo creado anteriormente del ViewBox que es un TextBlock donde tenemos
+            //guardado el TAG.
+            TextBlock tB = (TextBlock)vB.Child;
+
+            //Cambiamos el Text que es la ? por el TAG donde tenemos guardados los simbolos.
+            tB.Text = tB.Tag.ToString();
+
+            if (comparacion1 == null)
+            {
+                comparacion1 = tB;
+                borderComparacion1 = ((Border)sender);
+            }                
+            else
+            {
+                comparacion2 = tB ;
+
+                if (comparacion1.Tag.ToString() != comparacion2.Tag.ToString())
+                {
+                    ((Border)sender).Background = Brushes.Yellow;
+                    borderComparacion1.Background = Brushes.Yellow;
+                    comparacion1.Text = "s";
+                    comparacion2.Text = "s";
+                }                     
+                comparacion1 = null;
+                comparacion2 = null;                
+            }
+
         }
 
         /*Añadimos aleatoriamente los iconos de la lista en el texto del TextBlock y 
-        una vez añadido, lo eliminamos para que no se pueda usar*/
+        una vez añadido, lo eliminamos con el RemoveAT para que no se pueda usar*/
         private void CrearCartasAleatorias(TextBlock tB)
         {
             Random seed = new Random();
-            int numero = 0;
+            int numero = 0;           
+            numero = seed.Next(lista.Count);
 
-            for (int i = 0; i < COLUMNAS; i++)
-            {
-                numero = seed.Next(lista.Count);
-                tB.Text = lista[numero].ToString();                
-            }
+            tB.Tag = lista[numero].ToString();
+
             lista.RemoveAt(numero);
+                       
         }
+
+        
     }
 }
