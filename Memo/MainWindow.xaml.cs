@@ -30,11 +30,19 @@ namespace Memo
         private Border borderComparacion1;
         private DispatcherTimer timer;
         private double progresoBarra;
+        private bool esperarCartas;
 
         public MainWindow()
         {
             InitializeComponent();
             timer = new DispatcherTimer();
+            
+            timer.Tick += Timer_Tick;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            ((DispatcherTimer)sender).Interval = new TimeSpan(0, 0, 2);
         }
 
         //Evento para cuando hacemos Click en el boton iniciar.
@@ -114,6 +122,7 @@ namespace Memo
 
             //Introducimos en cada borde el evento para cuando hacemos click con el boton izq del raton encima de él.
             b.MouseLeftButtonDown += B_MouseLeftButtonDown;
+            b.MouseLeftButtonUp += B_MouseLeftButtonUp;
             CrearCartasAleatorias(tB);
             //Introducimos las cartas al grid, utilizamos el border ya que es el que contiene todo.
             GridCartas.Children.Add(b);
@@ -121,6 +130,21 @@ namespace Memo
             //Añadimos el borde a cada fila y columna.
             Grid.SetRow(b, filas);
             Grid.SetColumn(b, columnas);           
+        }
+
+        private void B_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {           
+
+            ((Border)sender).Background = Brushes.White;
+
+            Viewbox vB = (Viewbox)((Border)sender).Child;
+
+            TextBlock tB = (TextBlock)vB.Child;
+
+            tB.Text = tB.Tag.ToString();
+
+            CompararCartas(tB, ((Border)sender));
+            
         }
 
         //Cuando hacemos click en la carta, aparece otro Border diferente con el Icono
@@ -141,30 +165,39 @@ namespace Memo
             //Cambiamos el Text que es la ? por el TAG donde tenemos guardados los simbolos.
             tB.Text = tB.Tag.ToString();
 
-            CompararCartas(tB, ((Border)sender));                        
-
+            ((Border)sender).MouseLeftButtonDown -= B_MouseLeftButtonDown;
+            
         }
 
+        //Cuando he hecho click en dos cartas diferentes las compara para ver si son iguales o no y realizar la accion especificada.
         private void CompararCartas(TextBlock tB, Border b)
         {
             if (comparacion1 == null)
             {
+                //Guardamos el primer click.
                 comparacion1 = tB;
                 borderComparacion1 = b;
+
+                //Quito el evento al primer boton que hacemos click para no poder repetir el mismo evento.
                 borderComparacion1.MouseLeftButtonDown -= B_MouseLeftButtonDown;
+                borderComparacion1.MouseLeftButtonUp -= B_MouseLeftButtonUp;
             }
             else
             {
                 comparacion2 = tB;
-
+                
                 if (comparacion1.Tag.ToString() != comparacion2.Tag.ToString())
                 {
-
+                    Thread.Sleep(2000);
                     b.Background = Brushes.Yellow;
                     borderComparacion1.Background = Brushes.Yellow;
+
                     comparacion1.Text = "s";
                     comparacion2.Text = "s";
+
+                    //Le vuelvo a añadir el evento al no ser el correcto se podra hacer click otra vez.
                     borderComparacion1.MouseLeftButtonDown += B_MouseLeftButtonDown;
+                    borderComparacion1.MouseLeftButtonUp += B_MouseLeftButtonUp;
                 }
                 else
                 {
@@ -174,7 +207,7 @@ namespace Memo
                     LanzarMensaje();
                 }
                 comparacion1 = null;
-                comparacion2 = null;
+                comparacion2 = null;                
             }
         }
         /*Añadimos aleatoriamente los iconos de la lista en el texto del TextBlock y 
@@ -190,6 +223,8 @@ namespace Memo
             lista.RemoveAt(numero);                       
         }
 
+        /*Con este metodo calculando el progreso de la barra sabremos cuando hemos 
+        terminado la partida y saldra una ventana con un mensaje.*/
         private void LanzarMensaje()
         {
             if(barraProgreso.Value >= 100)
