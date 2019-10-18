@@ -36,10 +36,9 @@ namespace Memo
         {
             InitializeComponent();            
         }
-
         
         //Evento para cuando hacemos Click en el boton iniciar.
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Boton_Iniciar(object sender, RoutedEventArgs e)
         {
             //Limpiamos las filas y columnas, para que no se añadan nuevas dentro de las otras.
             GridCartas.RowDefinitions.Clear();
@@ -216,6 +215,8 @@ namespace Memo
                 {
                     borderComparacion1.MouseLeftButtonDown -= B_MouseLeftButtonDown;
                     b.MouseLeftButtonDown -= B_MouseLeftButtonDown;
+                    borderComparacion1.MouseLeftButtonUp -= B_MouseLeftButtonUp;
+                    b.MouseLeftButtonUp -= B_MouseLeftButtonUp;
                     barraProgreso.Value += progresoBarra;
                     LanzarMensaje();
                     comparacion1 = null;
@@ -245,9 +246,19 @@ namespace Memo
                 MessageBox.Show("Partida finalizada.", "Memory", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void Boton_Mostrar(object sender, RoutedEventArgs e)
         {
+            foreach (object objeto in GridCartas.Children)
+            {
+                Border b = (Border)objeto;
+                b.Background = Brushes.White;
 
+                Viewbox vB = (Viewbox)b.Child;
+                TextBlock tB = (TextBlock)vB.Child;
+                tB.Text = tB.Tag.ToString();
+
+                barraProgreso.Value = 100;
+            }            
         }
     }
 }
