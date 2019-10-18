@@ -17,6 +17,7 @@ using System.Threading;
 
 namespace Memo
 {
+    //Metodo para comparacion.
     public partial class MainWindow : Window
     {
         
@@ -30,21 +31,13 @@ namespace Memo
         private Border borderComparacion1;
         private DispatcherTimer timer;
         private double progresoBarra;
-        private bool esperarCartas;
 
         public MainWindow()
         {
-            InitializeComponent();
-            timer = new DispatcherTimer();
-            
-            timer.Tick += Timer_Tick;
+            InitializeComponent();            
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            ((DispatcherTimer)sender).Interval = new TimeSpan(0, 0, 2);
-        }
-
+        
         //Evento para cuando hacemos Click en el boton iniciar.
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -55,6 +48,8 @@ namespace Memo
             //Siempre que iniciemos un nivel pondremos la barra a 0.
             barraProgreso.Value = 0;
 
+            comparacion1 = null;
+            comparacion2 = null;
             //Inicializo el array aqui para que si cambio de nivel se vuelva a crear y no esten eliminados los caracteres.
             lista = new List<char>() { 'N', 'N', '&', '&', 'v', 'v', 'Y', 'Y', 'b', 'b', '~', '~', '!', '!', 'O', 'O', 'P', 'P', 'w', 'w' };
 
@@ -188,16 +183,34 @@ namespace Memo
                 
                 if (comparacion1.Tag.ToString() != comparacion2.Tag.ToString())
                 {
-                    Thread.Sleep(2000);
-                    b.Background = Brushes.Yellow;
-                    borderComparacion1.Background = Brushes.Yellow;
+                    int contador = 1;
+                    timer = new DispatcherTimer
+                    {
+                        IsEnabled = true,
+                        Interval = TimeSpan.FromSeconds(1)
+                    };
+                    timer.Tick += delegate
+                    {
+                        if (contador-- <= 0)
+                        {
+                            b.Background = Brushes.Yellow;
+                            borderComparacion1.Background = Brushes.Yellow;
 
-                    comparacion1.Text = "s";
-                    comparacion2.Text = "s";
+                            comparacion1.Text = "s";
+                            comparacion2.Text = "s";
 
-                    //Le vuelvo a añadir el evento al no ser el correcto se podra hacer click otra vez.
-                    borderComparacion1.MouseLeftButtonDown += B_MouseLeftButtonDown;
-                    borderComparacion1.MouseLeftButtonUp += B_MouseLeftButtonUp;
+                            //Le vuelvo a añadir el evento al no ser el correcto se podra hacer click otra vez.
+                            borderComparacion1.MouseLeftButtonDown += B_MouseLeftButtonDown;
+                            borderComparacion1.MouseLeftButtonUp += B_MouseLeftButtonUp;
+                            GridCartas.IsEnabled = true;
+                            comparacion1 = null;
+                            comparacion2 = null;
+                            timer.Stop();
+                        }
+                    };
+                    GridCartas.IsEnabled = false;
+                    timer.Start();
+                    
                 }
                 else
                 {
@@ -205,9 +218,10 @@ namespace Memo
                     b.MouseLeftButtonDown -= B_MouseLeftButtonDown;
                     barraProgreso.Value += progresoBarra;
                     LanzarMensaje();
+                    comparacion1 = null;
+                    comparacion2 = null;
                 }
-                comparacion1 = null;
-                comparacion2 = null;                
+                              
             }
         }
         /*Añadimos aleatoriamente los iconos de la lista en el texto del TextBlock y 
@@ -229,6 +243,11 @@ namespace Memo
         {
             if(barraProgreso.Value >= 100)
                 MessageBox.Show("Partida finalizada.", "Memory", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
