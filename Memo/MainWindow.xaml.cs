@@ -47,8 +47,9 @@ namespace Memo
             //Siempre que iniciemos un nivel pondremos la barra a 0.
             barraProgreso.Value = 0;
 
-            comparacion1 = null;
-            comparacion2 = null;
+            //Reiniciamos la comparacion de cartas, para que no compare la carta de un nivel con la de otro nivel.
+            ReiniciarComparacion();
+
             //Inicializo el array aqui para que si cambio de nivel se vuelva a crear y no esten eliminados los caracteres.
             lista = new List<char>() { 'N', 'N', '&', '&', 'v', 'v', 'Y', 'Y', 'b', 'b', '~', '~', '!', '!', 'O', 'O', 'P', 'P', 'w', 'w' };
 
@@ -104,23 +105,29 @@ namespace Memo
         //Definimos el aspecto de las cartas que se introduciran en cada celda.
         private void CrearCartas(int filas, int columnas)
         {
-            Border b = new Border();
-            Viewbox vB = new Viewbox();
-            TextBlock tB = new TextBlock();
-            tB.FontFamily = new FontFamily("Webdings");
-            tB.Text = "s";
-            vB.Child = tB;
-            b.Child = vB;
-            b.Background = Brushes.Yellow;
-            
+            TextBlock tB = new TextBlock
+            {
+                FontFamily = new FontFamily("Webdings"),
+                Text = "s"
+            };
+            Viewbox vB = new Viewbox
+            {
+                Child = tB
+            };
+            Border b = new Border
+            {
+                Child = vB,
+                Background = Brushes.Yellow
+            };
 
             //Introducimos en cada borde el evento para cuando hacemos click con el boton izq del raton encima de él.
             b.MouseLeftButtonDown += B_MouseLeftButtonDown;
             b.MouseLeftButtonUp += B_MouseLeftButtonUp;
+
             CrearCartasAleatorias(tB);
+
             //Introducimos las cartas al grid, utilizamos el border ya que es el que contiene todo.
             GridCartas.Children.Add(b);
-
             //Añadimos el borde a cada fila y columna.
             Grid.SetRow(b, filas);
             Grid.SetColumn(b, columnas);           
@@ -144,8 +151,6 @@ namespace Memo
         //Cuando hacemos click en la carta, aparece otro Border diferente con el Icono
         private void B_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {            
-            /*Todo esta creado en el meteodo CrearCartas()*/
-
             // Cogemos el border anteriormente creado y le cambiamos el color.
             ((Border)sender).Background = Brushes.White;
 
@@ -159,8 +164,7 @@ namespace Memo
             //Cambiamos el Text que es la ? por el TAG donde tenemos guardados los simbolos.
             tB.Text = tB.Tag.ToString();
 
-            ((Border)sender).MouseLeftButtonDown -= B_MouseLeftButtonDown;
-            
+            ((Border)sender).MouseLeftButtonDown -= B_MouseLeftButtonDown;            
         }
 
         //Cuando he hecho click en dos cartas diferentes las compara para ver si son iguales o no y realizar la accion especificada.
@@ -173,8 +177,7 @@ namespace Memo
                 borderComparacion1 = b;
 
                 //Quito el evento al primer boton que hacemos click para no poder repetir el mismo evento.
-                borderComparacion1.MouseLeftButtonDown -= B_MouseLeftButtonDown;
-                borderComparacion1.MouseLeftButtonUp -= B_MouseLeftButtonUp;
+                EliminarEventos(borderComparacion1);
             }
             else
             {
@@ -202,8 +205,7 @@ namespace Memo
                             borderComparacion1.MouseLeftButtonDown += B_MouseLeftButtonDown;
                             borderComparacion1.MouseLeftButtonUp += B_MouseLeftButtonUp;
                             GridCartas.IsEnabled = true;
-                            comparacion1 = null;
-                            comparacion2 = null;
+                            ReiniciarComparacion();
                             timer.Stop();
                         }
                     };
@@ -213,14 +215,14 @@ namespace Memo
                 }
                 else
                 {
-                    borderComparacion1.MouseLeftButtonDown -= B_MouseLeftButtonDown;
-                    b.MouseLeftButtonDown -= B_MouseLeftButtonDown;
-                    borderComparacion1.MouseLeftButtonUp -= B_MouseLeftButtonUp;
-                    b.MouseLeftButtonUp -= B_MouseLeftButtonUp;
+                    //Eliminamos los eventos para que ya no se pueda interactuar con esas cartas.
+                    EliminarEventos(borderComparacion1);
+                    EliminarEventos(b);
+
+                    //Vamos aumentando la barra de progreso por cada acierto.
                     barraProgreso.Value += progresoBarra;
                     LanzarMensaje();
-                    comparacion1 = null;
-                    comparacion2 = null;
+                    ReiniciarComparacion();
                 }
                               
             }
@@ -252,13 +254,26 @@ namespace Memo
             {
                 Border b = (Border)objeto;
                 b.Background = Brushes.White;
-
+                EliminarEventos(b);
                 Viewbox vB = (Viewbox)b.Child;
                 TextBlock tB = (TextBlock)vB.Child;
                 tB.Text = tB.Tag.ToString();
 
+
                 barraProgreso.Value = 100;
             }            
+        }
+
+        private void ReiniciarComparacion()
+        {
+            comparacion1 = null;
+            comparacion2 = null;
+        }
+
+        private void EliminarEventos(Border b)
+        {
+            b.MouseLeftButtonDown -= B_MouseLeftButtonDown;
+            b.MouseLeftButtonUp -= B_MouseLeftButtonUp;
         }
     }
 }
